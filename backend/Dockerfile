@@ -44,7 +44,7 @@ COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --chown=nodejs:nodejs . .
 
 # Ensure all source files are readable and wait script is executable
-RUN chmod -R a+r /app && chmod +x wait-for-db.sh
+RUN chmod +x wait-for-db.sh
 
 # Create necessary directories
 RUN mkdir -p storage/events/active storage/events/archived storage/thumbnails data logs && \
