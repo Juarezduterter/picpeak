@@ -16,7 +16,8 @@ async function validateUploadedFile(filePath) {
     
     // For image files, verify they can be read by Sharp
     const ext = path.extname(filePath).toLowerCase();
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    // PATCH HEIC: validate converted-or-unconverted HEIC/HEIF uploads with Sharp before processing.
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
     
     if (imageExtensions.includes(ext)) {
       // Try to read metadata - this will fail if image is corrupted
@@ -46,8 +47,8 @@ async function validateUploadedFile(filePath) {
           failOnError: false,
           limitInputPixels: 268402689
         })
-        .resize(10, 10) // Try to resize to very small size
-        .toBuffer();
+          .resize(10, 10) // Try to resize to very small size
+          .toBuffer();
       } catch (decodeError) {
         throw new Error(`Image decode failed - file may be corrupted: ${decodeError.message}`);
       }

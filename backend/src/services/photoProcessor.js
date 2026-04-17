@@ -4,6 +4,7 @@ const { db } = require('../database/db');
 const { generateThumbnail } = require('./imageProcessor');
 const { generatePhotoFilename } = require('../utils/filenameSanitizer');
 const { processUploadedVideo, isVideoMimeType } = require('./videoProcessor');
+const { normalizeUploadedFile } = require('./heicConversionService');
 
 // Get storage path from environment or default
 const getStoragePath = () => process.env.STORAGE_PATH || path.join(__dirname, '../../../storage');
@@ -71,6 +72,9 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
     const trx = await db.transaction();
     
     try {
+      // PATCH HEIC: normalize HEIC/HEIF uploads before generating filenames and thumbnails.
+      const normalizedFile = await normalizeUploadedFile(file);
+
       // Count existing photos to generate sequence number
       let counter = 1;
       let photoType = 'individual'; // default type
@@ -90,7 +94,7 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
       counter = existingCountValue + 1;
       
       // Generate new filename
-      const extension = path.extname(file.originalname);
+      const extension = normalizedFile.normalizedExtension || path.extname(normalizedFile.path || normalizedFile.originalname);
       const categoryName = photoType === 'collage' ? 'collages' : 'individual';
       const newFilename = generatePhotoFilename(
         event.event_name,
@@ -104,14 +108,14 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
       await fs.mkdir(destPath, { recursive: true });
       
       const newPath = path.join(destPath, newFilename);
-      const tempPath = file?.path || file?.filepath || file?.tempFilePath;
+      const tempPath = normalizedFile?.path || normalizedFile?.filepath || normalizedFile?.tempFilePath;
 
       if (!tempPath) {
         const fileInfo = JSON.stringify({
-          originalname: file?.originalname,
-          mimetype: file?.mimetype,
-          size: file?.size,
-          availableKeys: Object.keys(file || {})
+          originalname: normalizedFile?.originalname,
+          mimetype: normalizedFile?.mimetype,
+          size: normalizedFile?.size,
+          availableKeys: Object.keys(normalizedFile || {})
         });
         throw new Error(`Uploaded file is missing a temporary path. File info: ${fileInfo}`);
       }
@@ -121,7 +125,7 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
         await fs.access(tempPath);
       } catch (accessErr) {
         console.error(`Temp file not accessible: ${tempPath}`, {
-          originalname: file?.originalname,
+          originalname: normalizedFile?.originalname,
           error: accessErr.message
         });
         throw new Error(`Uploaded file not found at temporary location: ${tempPath}`);
@@ -130,7 +134,7 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
       // Use copyFile and unlink instead of rename to avoid cross-device issues
       try {
         await fs.copyFile(tempPath, newPath);
-        console.log(`Successfully copied ${file.originalname} to ${newPath}`);
+        console.log(`Successfully copied ${normalizedFile.originalname} to ${newPath}`);
       } catch (copyErr) {
         console.error(`Failed to copy file from ${tempPath} to ${newPath}:`, copyErr);
         throw new Error(`Failed to copy uploaded file: ${copyErr.message}`);
@@ -152,7 +156,7 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
       }
       
       // Determine if this is a video or image
-      const isVideo = isVideoMimeType(file.mimetype);
+      const isVideo = isVideoMimeType(normalizedFile.mimetype);
       const mediaType = isVideo ? 'video' : 'image';
 
       // Generate thumbnail and extract metadata
@@ -184,7 +188,7 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
             };
           }
         } catch (metadataError) {
-          console.warn(`Could not extract image dimensions for ${file.originalname}:`, metadataError.message);
+          console.warn(`Could not extract image dimensions for ${normalizedFile.originalname}:`, metadataError.message);
         }
       }
 
@@ -201,15 +205,15 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
       const photoData = {
         event_id: eventId,
         filename: newFilename,
-        original_filename: file.originalname,
+        original_filename: normalizedFile.originalname,
         path: relativePath,
         thumbnail_path: relativeThumbPath,
         type: photoType,
-        size_bytes: file.size,
+        size_bytes: normalizedFile.size,
         uploaded_by: uploadedBy,
         source_origin: 'managed',
         media_type: mediaType,
-        mime_type: file.mimetype
+        mime_type: normalizedFile.mimetype
       };
 
       // Add video-specific metadata if applicable
@@ -251,11 +255,11 @@ async function processUploadedPhotos(files, eventId, uploadedBy = 'admin', categ
       uploadedPhotos.push({
         id: photoId,
         filename: newFilename,
-        size: file.size,
+        size: normalizedFile.size,
         type: photoType
       });
 
-      console.log(`Successfully processed file ${file.originalname} (ID: ${photoId})`);
+      console.log(`Successfully processed file ${normalizedFile.originalname} (ID: ${photoId})`);
     } catch (error) {
       console.error(`Error processing file ${file.originalname}:`, {
         error: error.message,

@@ -20,9 +20,9 @@ const getStoragePath = () => process.env.STORAGE_PATH || path.join(__dirname, '.
  * Default allowed MIME types for different upload types
  */
 const ALLOWED_TYPES = {
-  photos: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  photos: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'],
   videos: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'],
-  media: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'],
+  media: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif', 'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'],
   logos: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'],
   favicons: ['image/png', 'image/x-icon', 'image/vnd.microsoft.icon'],
   documents: ['application/pdf', 'text/plain']

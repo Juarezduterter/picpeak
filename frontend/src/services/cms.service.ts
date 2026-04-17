@@ -30,7 +30,7 @@ export const cmsService = {
   },
 
   // Get public CMS page (no auth required)
-  async getPublicPage(slug: string, lang: string = 'en'): Promise<{ title: string; content: string }> {
+  async getPublicPage(slug: string, lang: string = 'fr'): Promise<{ title: string; content: string }> {
     const response = await api.get<{ title: string; content: string }>(`/public/pages/${slug}`, {
       params: { lang }
     });

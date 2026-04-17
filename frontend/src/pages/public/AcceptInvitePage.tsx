@@ -17,6 +17,7 @@ import { toast } from 'react-toastify';
 
 import { Button, Input, Card, Loading } from '../../components/common';
 import { api } from '../../config/api';
+import { useForcePublicFrench } from '../../hooks/useForcePublicFrench';
 
 interface InvitationValidation {
   valid: boolean;
@@ -55,6 +56,8 @@ export const AcceptInvitePage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
+
+  useForcePublicFrench();
 
   // Validate invitation token
   const {

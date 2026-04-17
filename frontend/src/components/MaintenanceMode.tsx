@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../config/api';
 import { buildResourceUrl } from '../utils/url';
+import { useForcePublicFrench } from '../hooks/useForcePublicFrench';
 
 interface BrandingSettings {
   branding_company_name?: string;
@@ -16,7 +17,8 @@ interface BrandingSettings {
 }
 
 export const MaintenanceMode: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  useForcePublicFrench();
   
   // Fetch branding settings
   const { data: settings } = useQuery<BrandingSettings>({
@@ -33,13 +35,6 @@ export const MaintenanceMode: React.FC = () => {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     retry: false, // Don't retry on failure
   });
-
-  // Set language based on system settings
-  useEffect(() => {
-    if (settings?.default_language && settings.default_language !== i18n.language) {
-      i18n.changeLanguage(settings.default_language);
-    }
-  }, [settings?.default_language, i18n]);
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">

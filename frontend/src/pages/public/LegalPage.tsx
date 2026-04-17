@@ -7,12 +7,14 @@ import DOMPurify from 'dompurify';
 import { Loading, Card } from '../../components/common';
 import { cmsService } from '../../services/cms.service';
 import { api } from '../../config/api';
+import { useForcePublicFrench } from '../../hooks/useForcePublicFrench';
 import '../../styles/prose-overrides.css';
 
 export const LegalPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  useForcePublicFrench();
   
   // Extract page slug from pathname if not in params (for static routes like /impressum)
   const pathname = window.location.pathname;
@@ -28,8 +30,7 @@ export const LegalPage: React.FC = () => {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
-  // Use admin settings language
-  const lang = settingsData?.default_language || 'en';
+  const lang = 'fr';
 
   // Fetch page content
   const { data: page, isLoading, error } = useQuery({
@@ -37,13 +38,6 @@ export const LegalPage: React.FC = () => {
     queryFn: () => cmsService.getPublicPage(pageSlug, lang),
     enabled: !!pageSlug && pageSlug !== '' && !!settingsData,
   });
-
-  // Set i18n language when settings are loaded
-  useEffect(() => {
-    if (settingsData?.default_language) {
-      i18n.changeLanguage(settingsData.default_language);
-    }
-  }, [settingsData, i18n]);
 
   // Update page title
   useEffect(() => {
@@ -55,7 +49,7 @@ export const LegalPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Loading size="lg" text="Loading..." />
+        <Loading size="lg" text={t('common.loading')} />
       </div>
     );
   }
@@ -65,16 +59,16 @@ export const LegalPage: React.FC = () => {
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <Card className="max-w-md w-full mx-4">
           <div className="text-center py-12 px-6">
-            <h2 className="text-xl font-semibold mb-2">Page Not Found</h2>
+            <h2 className="text-xl font-semibold mb-2">{t('errors.notFound')}</h2>
             <p className="text-neutral-600 mb-6">
-              The page you're looking for doesn't exist.
+              {t('errors.pageNotFoundMessage', 'La page que vous recherchez n’existe pas.')}
             </p>
             <Link
               to="/"
               className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700"
             >
               <Home className="w-4 h-4" />
-              Go to Homepage
+              {t('errors.goToHomepage')}
             </Link>
           </div>
         </Card>
@@ -92,7 +86,7 @@ export const LegalPage: React.FC = () => {
             className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            {i18n.language === 'de' ? 'Zurück' : 'Back'}
+            {t('common.back')}
           </button>
         </div>
       </header>
@@ -133,18 +127,18 @@ export const LegalPage: React.FC = () => {
               to="/impressum"
               className="text-neutral-600 hover:text-neutral-900"
             >
-              {lang === 'de' ? 'Impressum' : 'Legal Notice'}
+              {t('legal.impressum')}
             </Link>
             <span className="text-neutral-400">•</span>
             <Link
               to="/datenschutz"
               className="text-neutral-600 hover:text-neutral-900"
             >
-              {lang === 'de' ? 'Datenschutz' : 'Privacy Policy'}
+              {t('legal.datenschutz')}
             </Link>
           </div>
           <p className="text-sm text-neutral-500 mt-4">
-            © {new Date().getFullYear()} PicPeak. All rights reserved.
+            © {new Date().getFullYear()} PicPeak. {t('gallery.allRightsReserved')}.
           </p>
         </div>
       </footer>

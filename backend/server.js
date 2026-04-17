@@ -213,10 +213,10 @@ function renderBrandHeader(branding) {
       </div>
     </div>
     <nav class="site-nav">
-      <a href="#features">${'Features'}</a>
-      <a href="#workflow">${'Workflow'}</a>
-      <a href="#collections">${'Collections'}</a>
-      <a href="#stories">${'Stories'}</a>
+      <a href="#features">${'Fonctionnalités'}</a>
+      <a href="#workflow">${'Parcours'}</a>
+      <a href="#collections">${'Galeries'}</a>
+      <a href="#stories">${'Avis'}</a>
       <a href="#contact">${'Contact'}</a>
     </nav>
   </div>
@@ -227,15 +227,15 @@ function renderBrandFooter(branding) {
   const displayName = branding.companyName || 'PicPeak';
   const footerNote = branding.footerText
     ? `<p>${branding.footerText}</p>`
-    : '<p>Powered by PicPeak to keep every celebration beautifully organised.</p>';
+    : '<p>Propulsé par PicPeak pour organiser chaque événement avec soin.</p>';
 
   const supportLink = branding.supportEmail
     ? `<a href="mailto:${branding.supportEmail}">Support</a>`
     : '';
 
   const legalLinks = `
-    <a href="/datenschutz">Privacy Policy</a>
-    <a href="/impressum">Impressum</a>
+    <a href="/datenschutz">Politique de confidentialité</a>
+    <a href="/impressum">Mentions légales</a>
     ${supportLink}
   `;
 
@@ -277,13 +277,13 @@ function buildPublicSiteDocument(payload) {
   const seoMeta = payload.seoSettings ? buildSeoMetaTags(payload.seoSettings) : '';
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${payload.title}</title>
-  <meta name="description" content="Curated photo galleries and stories from unforgettable celebrations." />
+  <meta name="description" content="Galeries photo soignées et récits d’événements inoubliables." />
   ${seoMeta}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

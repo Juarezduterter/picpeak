@@ -1177,7 +1177,7 @@ router.post('/:eventId/upload', verifyGalleryAccess, async (req, res) => {
     try {
       allowedMimeTypes = await getAllowedMimeTypes();
     } catch {
-      allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     }
 
     const upload = multer({

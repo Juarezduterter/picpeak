@@ -12,6 +12,7 @@ const { escapeLikePattern } = require('../utils/sqlSecurity');
 const { validateUploadedFiles } = require('../middleware/uploadValidation');
 const { getMaxFilesPerUpload, getAllowedMimeTypes } = require('../services/uploadSettings');
 const { processUploadedPhotos } = require('../services/photoProcessor');
+const { normalizeUploadedFile } = require('../services/heicConversionService');
 const chunkedUpload = require('../services/chunkedUploadService');
 const watermarkGeneratorService = require('../services/watermarkGeneratorService');
 const router = express.Router();
@@ -24,7 +25,6 @@ const getStoragePath = () => process.env.STORAGE_PATH || path.join(__dirname, '.
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     console.log('Multer destination called for file:', file.originalname);
-    const { eventId } = req.params;
     
     // We'll validate the event exists in the route handler
     // For now, just create a temp destination
@@ -65,7 +65,7 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     // req.allowedMimeTypes is populated by the middleware that runs before multer
-    const allowedMimeTypes = req.allowedMimeTypes || ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedMimeTypes = req.allowedMimeTypes || ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
     if (validateFileType(file.originalname, file.mimetype, allowedMimeTypes)) {
       return cb(null, true);
@@ -82,14 +82,14 @@ const resolveAllowedTypes = async (req, res, next) => {
     req.allowedMimeTypes = await getAllowedMimeTypes();
   } catch (error) {
     console.error('Failed to resolve allowed MIME types:', error);
-    req.allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    req.allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
   }
   next();
 };
 
 // Dynamic content validator middleware that reads allowed types from req
 const validateUploadContent = async (req, res, next) => {
-  const allowedTypes = req.allowedMimeTypes || ['image/jpeg', 'image/png', 'image/webp'];
+  const allowedTypes = req.allowedMimeTypes || ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
   const validator = createFileUploadValidator({
     allowedTypes,
     maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB to support large videos
@@ -240,9 +240,12 @@ router.post('/:eventId/upload', adminAuth, requirePermission('photos.upload'), u
         for (let fileIndex = 0; fileIndex < batch.length; fileIndex++) {
           const file = batch[fileIndex];
           const counter = batchCounter + fileIndex;
-          const tempPath = file.path; // Original temp path
           
           try {
+            // PATCH HEIC: convert HEIC/HEIF uploads before DB metadata and final filenames are computed.
+            const normalizedFile = await normalizeUploadedFile(file);
+            const tempPath = normalizedFile.path; // Original temp path after optional HEIC conversion
+
             // Verify file is complete before processing
             const tempStats = await fs.stat(tempPath);
             if (tempStats.size === 0) {
@@ -250,7 +253,7 @@ router.post('/:eventId/upload', adminAuth, requirePermission('photos.upload'), u
             }
             
             // Generate new filename
-            const extension = path.extname(file.originalname);
+            const extension = normalizedFile.normalizedExtension || path.extname(normalizedFile.path || normalizedFile.originalname);
             const newFilename = generatePhotoFilename(
               event.event_name,
               categoryName,
@@ -269,18 +272,18 @@ router.post('/:eventId/upload', adminAuth, requirePermission('photos.upload'), u
               capturedAt = await extractCaptureDate(tempPath);
             } catch (exifError) {
               // Non-fatal - just log and continue without capture date
-              console.log(`Could not extract EXIF date for ${file.originalname}`);
+              console.log(`Could not extract EXIF date for ${normalizedFile.originalname}`);
             }
 
             // Determine media type
-            const isVideo = isVideoMimeType(file.mimetype);
+            const isVideo = isVideoMimeType(normalizedFile.mimetype);
             const mediaType = isVideo ? 'video' : 'image';
 
             // Prepare photo data for batch insert
             const photoData = {
               event_id: parseInt(eventId),
               filename: newFilename,
-              original_filename: file.originalname, // Preserve original filename for Lightroom export
+              original_filename: normalizedFile.originalname, // Preserve original filename for Lightroom export
               path: relativePath,
               thumbnail_path: null, // Will generate after successful commit
               type: photoType,
@@ -288,7 +291,7 @@ router.post('/:eventId/upload', adminAuth, requirePermission('photos.upload'), u
               size_bytes: tempStats.size, // Use actual file size from stat
               captured_at: capturedAt, // EXIF capture date (if available)
               media_type: mediaType,
-              mime_type: file.mimetype
+              mime_type: normalizedFile.mimetype
             };
             
             batchPhotos.push(photoData);
@@ -298,7 +301,8 @@ router.post('/:eventId/upload', adminAuth, requirePermission('photos.upload'), u
               tempPath: tempPath,
               finalPath: finalPath,
               filename: newFilename,
-              photoData: photoData
+              photoData: photoData,
+              originalname: normalizedFile.originalname
             });
           } catch (error) {
             console.error(`Error preparing file ${file.originalname}:`, error);
@@ -375,7 +379,7 @@ router.post('/:eventId/upload', adminAuth, requirePermission('photos.upload'), u
                         updateData.height = metadata.height;
                       }
                     } catch (metadataError) {
-                      console.warn(`Could not extract image dimensions for ${operation.filename}:`, metadataError.message);
+                      console.warn(`Could not extract image dimensions for ${operation.originalname}:`, metadataError.message);
                     }
 
                     if (Object.keys(updateData).length > 0) {
@@ -416,7 +420,7 @@ router.post('/:eventId/upload', adminAuth, requirePermission('photos.upload'), u
                   await db('photos').where({ id: photoId }).delete();
                   console.log(`Cleaned up database entry for failed photo ${photoId}`);
                 } catch (cleanupError) {
-                  console.error(`Failed to clean up database entry:`, cleanupError);
+                  console.error('Failed to clean up database entry:', cleanupError);
                 }
               }
             }
@@ -999,7 +1003,7 @@ router.post('/:eventId/chunked-upload/init', adminAuth, requirePermission('photo
     // Validate file size (max 10GB)
     const maxSize = 10 * 1024 * 1024 * 1024;
     if (fileSize > maxSize) {
-      return res.status(400).json({ error: `File too large. Maximum size is 10GB.` });
+      return res.status(400).json({ error: 'File too large. Maximum size is 10GB.' });
     }
 
     const result = await chunkedUpload.initializeUpload({

@@ -16,11 +16,12 @@ import { api } from '../config/api';
 import { GALLERY_THEME_PRESETS } from '../types/theme.types';
 import { buildResourceUrl } from '../utils/url';
 import { isGalleryPublic, normalizeRequirePassword } from '../utils/accessControl';
+import { useForcePublicFrench } from '../hooks/useForcePublicFrench';
 
 export const GalleryPage: React.FC = () => {
   const { slug: rawSlug, token: rawToken } = useParams<{ slug: string; token?: string }>();
   const { isAuthenticated, login, event } = useGalleryAuth();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { format } = useLocalizedDate();
   const { setTheme } = useTheme();
   const [password, setPassword] = useState('');
@@ -40,6 +41,8 @@ export const GalleryPage: React.FC = () => {
   );
   const [identifierError, setIdentifierError] = useState<string | null>(null);
   const lastResolvedIdentifier = React.useRef<string | null>(null);
+
+  useForcePublicFrench();
 
   React.useEffect(() => {
     let cancelled = false;
@@ -115,13 +118,6 @@ export const GalleryPage: React.FC = () => {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
   
-  // Set language from admin settings when on login page
-  React.useEffect(() => {
-    if (!isAuthenticated && settingsData?.default_language) {
-      i18n.changeLanguage(settingsData.default_language);
-    }
-  }, [settingsData, isAuthenticated, i18n]);
-
   // Apply theme for gallery (both login page and authenticated view)
   React.useEffect(() => {
     if (galleryInfo && settingsData) {

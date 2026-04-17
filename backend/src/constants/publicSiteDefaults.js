@@ -1,27 +1,27 @@
-const DEFAULT_PUBLIC_SITE_TITLE = 'PicPeak — Curated Galleries, Effortless Sharing';
+const DEFAULT_PUBLIC_SITE_TITLE = 'PicPeak — Galeries soignées, partage simplifié';
 
 const DEFAULT_PUBLIC_SITE_HTML = `
 <section class="hero" id="welcome">
   <div class="hero__inner">
-    <span class="hero__badge">PicPeak Showcase</span>
-    <h1>Share the story of {{company_name}}</h1>
+    <span class="hero__badge">Vitrine PicPeak</span>
+    <h1>Partagez l’histoire de {{company_name}}</h1>
     <p class="hero__lead">{{company_tagline}}</p>
     <div class="hero__cta">
-      <a href="#features" class="button button--primary">Explore Features</a>
-      <a href="#collections" class="button button--ghost">View Sample Galleries</a>
+      <a href="#features" class="button button--primary">Découvrir les fonctionnalités</a>
+      <a href="#collections" class="button button--ghost">Voir des galeries exemples</a>
     </div>
     <dl class="hero__stats">
       <div>
-        <dt>Private invites</dt>
-        <dd>Secure links for every guest</dd>
+        <dt>Invitations privées</dt>
+        <dd>Des liens sécurisés pour chaque invité</dd>
       </div>
       <div>
-        <dt>Curated delivery</dt>
-        <dd>Highlight every favourite instantly</dd>
+        <dt>Livraison soignée</dt>
+        <dd>Mettez en valeur chaque favori immédiatement</dd>
       </div>
       <div>
-        <dt>Fully branded</dt>
-        <dd>Colours, typography, and logo that match you</dd>
+        <dt>Entièrement à votre image</dt>
+        <dd>Couleurs, typographie et logo adaptés à votre univers</dd>
       </div>
     </dl>
   </div>
@@ -29,16 +29,16 @@ const DEFAULT_PUBLIC_SITE_HTML = `
     <article class="deck deck--primary">
       <header class="deck__header">
         <img src="{{brand_logo_url}}" alt="{{company_name}} logo" class="deck__logo" loading="lazy" decoding="async" />
-        <span class="deck__title">PicPeak Gallery</span>
+        <span class="deck__title">Galerie PicPeak</span>
       </header>
       <ul class="deck__list">
-        <li>Guided cover stories</li>
-        <li>Guest uploads with approvals</li>
-        <li>Protected high-res downloads</li>
+        <li>Présentations guidées</li>
+        <li>Envois invités avec validation</li>
+        <li>Téléchargements HD protégés</li>
       </ul>
     </article>
     <article class="deck deck--secondary">
-      <p class="deck__quote">“PicPeak makes delivery feel like part of the celebration. Our couples relive the day the moment they open the link.”</p>
+      <p class="deck__quote">« PicPeak transforme la livraison en prolongement de la fête. Nos couples revivent leur journée dès l’ouverture du lien. »</p>
       <p class="deck__author">— Studio Miraval</p>
     </article>
   </div>
@@ -46,83 +46,83 @@ const DEFAULT_PUBLIC_SITE_HTML = `
 
 <section class="features" id="features">
   <div class="section-head">
-    <span class="section-badge">Why teams pick PicPeak</span>
-    <h2>Design-first galleries with the workflow you already love</h2>
-    <p>Bring the PicPeak admin experience to your clients with branded, secure, and responsive public pages.</p>
+    <span class="section-badge">Pourquoi choisir PicPeak</span>
+    <h2>Des galeries élégantes avec le workflow que vous aimez déjà</h2>
+    <p>Offrez à vos clients l’expérience PicPeak avec des pages publiques réactives, sécurisées et à votre image.</p>
   </div>
   <div class="feature-grid">
     <article>
-      <h3>Beautiful by default</h3>
-      <p>Every gallery inherits your PicPeak theme, typography, and colour palette automatically.</p>
+      <h3>Soigné par défaut</h3>
+      <p>Chaque galerie reprend automatiquement votre thème, votre typographie et votre palette de couleurs PicPeak.</p>
     </article>
     <article>
-      <h3>Guided storytelling</h3>
-      <p>Create anchored sections, spotlight favourite collections, and embed testimonials that build trust.</p>
+      <h3>Narration guidée</h3>
+      <p>Créez des sections ancrées, mettez en avant vos collections et ajoutez des témoignages rassurants.</p>
     </article>
     <article>
-      <h3>Secure sharing</h3>
-      <p>Password gates, expiring links, and download protection keep every celebration personal.</p>
+      <h3>Partage sécurisé</h3>
+      <p>Protection par mot de passe, liens expirants et contrôle du téléchargement gardent chaque événement privé.</p>
     </article>
   </div>
 </section>
 
 <section class="workflow" id="workflow">
   <div class="workflow__content">
-    <h2>Launch in minutes</h2>
+    <h2>Mise en ligne en quelques minutes</h2>
     <ol class="workflow__steps">
       <li>
-        <h4>Brand it once</h4>
-        <p>PicPeak automatically applies your logo, colours, and support details.</p>
+        <h4>Personnalisez une fois</h4>
+        <p>PicPeak applique automatiquement votre logo, vos couleurs et vos coordonnées de support.</p>
       </li>
       <li>
-        <h4>Curate sections</h4>
-        <p>Highlight hero stories, featured galleries, and timeline moments with simple HTML blocks.</p>
+        <h4>Structurez vos sections</h4>
+        <p>Mettez en avant vos galeries, vos moments forts et vos histoires clés avec de simples blocs HTML.</p>
       </li>
       <li>
-        <h4>Share confidently</h4>
-        <p>Send a single link that greets guests before they enter their private gallery.</p>
+        <h4>Partagez sereinement</h4>
+        <p>Envoyez un lien unique qui accueille vos invités avant leur entrée dans la galerie privée.</p>
       </li>
     </ol>
   </div>
   <div class="workflow__media">
     <figure class="workflow__browser">
       <img src="/picpeak-logo-transparent.png" alt="PicPeak interface" loading="lazy" decoding="async" />
-      <figcaption>PicPeak dashboard &mdash; trusted by studios worldwide.</figcaption>
+      <figcaption>Tableau de bord PicPeak &mdash; adopté par des studios du monde entier.</figcaption>
     </figure>
   </div>
 </section>
 
 <section class="collections" id="collections">
   <div class="section-head">
-    <span class="section-badge">Showcase highlights</span>
-    <h2>Curated sample galleries that mirror your client experience</h2>
-    <p>Drop in featured stories, welcome messages, and callouts that prepare guests for what comes next.</p>
+    <span class="section-badge">Exemples à mettre en avant</span>
+    <h2>Des galeries exemples qui reflètent votre expérience client</h2>
+    <p>Ajoutez des histoires à la une, des messages d’accueil et des encarts qui préparent vos invités à la suite.</p>
   </div>
   <div class="collection-showcase">
     <article>
-      <h3>Signature Galleries</h3>
-      <p>Use responsive cards to preview your most loved collections or vendor partnerships.</p>
+      <h3>Galeries signature</h3>
+      <p>Utilisez des cartes responsives pour présenter vos collections phares ou vos partenariats.</p>
     </article>
     <article>
-      <h3>Welcome timelines</h3>
-      <p>Guide guests from arrival to download with steps that feel effortless and on-brand.</p>
+      <h3>Parcours d’accueil</h3>
+      <p>Guidez vos invités de l’arrivée au téléchargement avec un parcours fluide et cohérent avec votre image.</p>
     </article>
   </div>
 </section>
 
 <section class="stories" id="stories">
   <div class="section-head section-head--center">
-    <span class="section-badge">Client notes</span>
-    <h2>Experiences that keep guests coming back</h2>
+    <span class="section-badge">Retours clients</span>
+    <h2>Des expériences qui donnent envie de revenir</h2>
   </div>
   <div class="story-grid">
     <figure>
-      <blockquote>“From the welcome page to the final download, everything felt like us. PicPeak turned our gallery into part of the celebration.”</blockquote>
+      <blockquote>« De la page d’accueil jusqu’au téléchargement final, tout nous ressemblait. PicPeak a fait de notre galerie une vraie partie de la célébration. »</blockquote>
       <figcaption>— Harper &amp; Elias</figcaption>
     </figure>
     <figure>
-      <blockquote>“The public landing page gives every collection a narrative. Our couples feel the care we put into every image.”</blockquote>
-      <figcaption>— Jordan Rivera, Photographer</figcaption>
+      <blockquote>« La page publique donne une vraie narration à chaque collection. Nos couples ressentent l’attention portée à chaque image. »</blockquote>
+      <figcaption>— Jordan Rivera, photographe</figcaption>
     </figure>
   </div>
 </section>
@@ -130,12 +130,12 @@ const DEFAULT_PUBLIC_SITE_HTML = `
 <section class="cta" id="contact">
   <div class="cta__inner">
     <div>
-      <h2>Ready to welcome your guests?</h2>
-      <p>Create a PicPeak landing page that matches your studio and introduces every celebration with confidence.</p>
+      <h2>Prêt à accueillir vos invités ?</h2>
+      <p>Créez une page publique PicPeak à l’image de votre studio et présentez chaque événement avec élégance.</p>
     </div>
     <div class="cta__actions">
-      <a href="mailto:{{support_email}}" class="button button--primary">Contact us</a>
-      <a href="#features" class="button button--ghost">Review features</a>
+      <a href="mailto:{{support_email}}" class="button button--primary">Nous contacter</a>
+      <a href="#features" class="button button--ghost">Voir les fonctionnalités</a>
     </div>
   </div>
 </section>
@@ -144,11 +144,11 @@ const DEFAULT_PUBLIC_SITE_HTML = `
   <div class="footer-inner">
     <div>
       <h2>{{company_name}}</h2>
-      <p>Powered by PicPeak to keep every celebration beautifully organised.</p>
+      <p>Propulsé par PicPeak pour organiser chaque événement avec soin.</p>
     </div>
     <div class="footer-links">
-      <a href="/datenschutz">Privacy Policy</a>
-      <a href="/impressum">Impressum</a>
+      <a href="/datenschutz">Politique de confidentialité</a>
+      <a href="/impressum">Mentions légales</a>
       <a href="mailto:{{support_email}}">Support</a>
     </div>
   </div>

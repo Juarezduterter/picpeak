@@ -36,12 +36,22 @@ function safePathJoin(basePath, userPath) {
 function isPathSafe(filePath) {
   // Check for common path traversal patterns
   const dangerousPatterns = [
-    /\.\.[\/\\]/,  // ../ or ..\
-    /^[A-Za-z]:/,  // Windows drive letters
-    /[\x00-\x1f]/  // Control characters
+    /\.\.[/\\]/,  // ../ or ..\
+    /^[A-Za-z]:/  // Windows drive letters
   ];
   
-  return !dangerousPatterns.some(pattern => pattern.test(filePath));
+  if (dangerousPatterns.some(pattern => pattern.test(filePath))) {
+    return false;
+  }
+
+  for (const char of filePath) {
+    const code = char.charCodeAt(0);
+    if (code <= 31) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -72,6 +82,20 @@ const ALLOWED_IMAGE_TYPES = {
     magicNumbers: [
       { offset: 0, bytes: [0x47, 0x49, 0x46, 0x38, 0x37, 0x61] }, // GIF87a
       { offset: 0, bytes: [0x47, 0x49, 0x46, 0x38, 0x39, 0x61] }  // GIF89a
+    ]
+  },
+  'image/heic': {
+    // PATCH HEIC: accept strict HEIC uploads and rely on server-side conversion before storage.
+    extensions: ['.heic'],
+    magicNumbers: [
+      { offset: 4, bytes: [0x66, 0x74, 0x79, 0x70] } // ISO BMFF 'ftyp'
+    ]
+  },
+  'image/heif': {
+    // PATCH HEIC: accept strict HEIF uploads and rely on server-side conversion before storage.
+    extensions: ['.heif'],
+    magicNumbers: [
+      { offset: 4, bytes: [0x66, 0x74, 0x79, 0x70] } // ISO BMFF 'ftyp'
     ]
   },
   'image/svg+xml': {
@@ -190,7 +214,7 @@ function getSafeFilename(originalFilename) {
   const ext = path.extname(originalFilename).toLowerCase();
 
   // Validate extension - including both image and video extensions
-  const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.ico', '.mp4', '.m4v', '.webm', '.mov', '.avi'];
+  const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.heic', '.heif', '.svg', '.ico', '.mp4', '.m4v', '.webm', '.mov', '.avi'];
   if (!validExtensions.includes(ext)) {
     throw new Error('Invalid file extension');
   }

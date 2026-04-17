@@ -5,6 +5,103 @@ const logger = require('../utils/logger');
 
 let transporter = null;
 let lastConfigHash = null;
+const FRENCH_CLIENT_TEMPLATE_KEYS = new Set([
+  'gallery_created',
+  'expiration_warning',
+  'gallery_expired',
+  'archive_complete'
+]);
+
+function getFrenchTemplateContent(templateKey) {
+  const frenchTemplates = {
+    gallery_created: {
+      subject: 'Votre galerie photo est prête',
+      html: `
+<h2>Votre galerie est en ligne</h2>
+<p>Bonjour {{host_name}},</p>
+<p>Votre galerie photo <strong>{{event_name}}</strong> est maintenant disponible.</p>
+<p>{{welcome_message}}</p>
+<p><strong>Lien de la galerie :</strong><br><a href="{{gallery_link}}" class="button">Accéder à la galerie</a></p>
+<p><strong>Mot de passe :</strong> {{gallery_password}}</p>
+<p><strong>Disponibilité :</strong> jusqu’au {{expiry_date}}</p>
+<p>Après cette date, la galerie sera archivée et ne sera plus accessible en ligne sans demande spécifique.</p>
+      `,
+      text: `Votre galerie est en ligne
+
+Bonjour {{host_name}},
+
+Votre galerie photo "{{event_name}}" est maintenant disponible.
+
+{{welcome_message}}
+
+Lien de la galerie : {{gallery_link}}
+Mot de passe : {{gallery_password}}
+Disponibilité : jusqu’au {{expiry_date}}
+
+Après cette date, la galerie sera archivée et ne sera plus accessible en ligne sans demande spécifique.`
+    },
+    expiration_warning: {
+      subject: 'Votre galerie expire bientôt',
+      html: `
+<h2>Votre galerie expire bientôt</h2>
+<p>Bonjour {{host_name}},</p>
+<p>Nous vous rappelons que votre galerie <strong>{{event_name}}</strong> restera disponible jusqu’au <strong>{{expiry_date}}</strong>.</p>
+<p>Après cette date, la galerie sera archivée et ne sera plus accessible aux invités.</p>
+<p><a href="{{gallery_link}}" class="button">Voir la galerie</a></p>
+      `,
+      text: `Votre galerie expire bientôt
+
+Bonjour {{host_name}},
+
+Votre galerie "{{event_name}}" restera disponible jusqu’au {{expiry_date}}.
+
+Après cette date, la galerie sera archivée et ne sera plus accessible aux invités.
+
+Voir la galerie : {{gallery_link}}`
+    },
+    gallery_expired: {
+      subject: 'Votre galerie photo a expiré',
+      html: `
+<h2>Votre galerie a expiré</h2>
+<p>Bonjour {{host_name}},</p>
+<p>Votre galerie photo <strong>{{event_name}}</strong> a expiré et a été archivée.</p>
+<p>Vos photos restent conservées en toute sécurité. Si vous souhaitez y accéder à nouveau, merci de nous contacter à <a href="mailto:{{admin_email}}">{{admin_email}}</a>.</p>
+      `,
+      text: `Votre galerie a expiré
+
+Bonjour {{host_name}},
+
+Votre galerie photo "{{event_name}}" a expiré et a été archivée.
+
+Vos photos restent conservées en toute sécurité. Si vous souhaitez y accéder à nouveau, merci de nous contacter à : {{admin_email}}`
+    },
+    archive_complete: {
+      subject: 'Votre galerie photo a bien été archivée',
+      html: `
+<h2>Archivage terminé</h2>
+<p>Bonjour {{host_name}},</p>
+<p>Votre galerie photo <strong>{{event_name}}</strong> a bien été archivée.</p>
+<ul>
+  <li><strong>Date d’archivage :</strong> {{archive_date}}</li>
+  <li><strong>Taille de l’archive :</strong> {{archive_size}}</li>
+</ul>
+<p>Vos photos sont maintenant stockées en toute sécurité dans notre archive.</p>
+      `,
+      text: `Archivage terminé
+
+Bonjour {{host_name}},
+
+Votre galerie photo "{{event_name}}" a bien été archivée.
+
+- Date d’archivage : {{archive_date}}
+- Taille de l’archive : {{archive_size}}
+
+Vos photos sont maintenant stockées en toute sécurité dans notre archive.`
+    }
+  };
+
+  return frenchTemplates[templateKey] || null;
+}
 
 // Generate hash from config for change detection
 function generateConfigHash(config) {
@@ -121,26 +218,31 @@ async function processTemplate(template, variables, language = 'en') {
   const subjectField = language === 'de' ? 'subject_de' : 'subject_en';
   const htmlField = language === 'de' ? 'body_html_de' : 'body_html_en';
   const textField = language === 'de' ? 'body_text_de' : 'body_text_en';
+  const frenchTemplate = language === 'fr' ? getFrenchTemplateContent(template.template_key) : null;
   
   // Fall back to non-language-specific fields for backward compatibility
-  let subject = template[subjectField] || template.subject || '';
-  let htmlBody = template[htmlField] || template.body_html || '';
-  let textBody = template[textField] || template.body_text || '';
+  let subject = frenchTemplate?.subject || template[subjectField] || template.subject || '';
+  let htmlBody = frenchTemplate?.html || template[htmlField] || template.body_html || '';
+  let textBody = frenchTemplate?.text || template[textField] || template.body_text || '';
   
   // Process variables before template compilation
   const processedVariables = { ...variables };
   
   // Handle password security message
   if (processedVariables.gallery_password === '{{password_security_message}}') {
-    processedVariables.gallery_password = language === 'de' 
-      ? '(Aus Sicherheitsgründen nicht angezeigt)' 
-      : '(Not shown for security reasons)';
+    processedVariables.gallery_password = language === 'de'
+      ? '(Aus Sicherheitsgründen nicht angezeigt)'
+      : language === 'fr'
+        ? '(Non affiché pour des raisons de sécurité)'
+        : '(Not shown for security reasons)';
   }
 
   if (processedVariables.gallery_password === 'No password required') {
     processedVariables.gallery_password = language === 'de'
       ? 'Kein Passwort erforderlich'
-      : 'No password required';
+      : language === 'fr'
+        ? 'Aucun mot de passe requis'
+        : 'No password required';
   }
   
   // Format dates if they exist
@@ -332,7 +434,7 @@ async function processTemplate(template, variables, language = 'en') {
       <div class="email-footer">
         <img src="${logoFullUrl}" alt="${companyName}">
         <p>${companyName}</p>
-        <p style="font-size: 12px; color: #999;">© ${new Date().getFullYear()} ${companyName}. All rights reserved.</p>
+        <p style="font-size: 12px; color: #999;">© ${new Date().getFullYear()} ${companyName}. ${language === 'fr' ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
       </div>
     </div>
   </div>
@@ -367,7 +469,9 @@ async function sendTemplateEmail(to, templateKey, variables) {
     }
 
     // Determine recipient language (pass eventId if available in variables)
-    const language = await getRecipientLanguage(to, variables.eventId || null);
+    const language = FRENCH_CLIENT_TEMPLATE_KEYS.has(templateKey)
+      ? 'fr'
+      : await getRecipientLanguage(to, variables.eventId || null);
     
     // Process template with variables
     const { subject, htmlBody, textBody } = await processTemplate(template, variables, language);

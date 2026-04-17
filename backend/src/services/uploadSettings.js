@@ -14,6 +14,8 @@ const EXTENSION_TO_MIME = {
   'png': 'image/png',
   'webp': 'image/webp',
   'gif': 'image/gif',
+  'heic': 'image/heic',
+  'heif': 'image/heif',
   'mp4': 'video/mp4',
   'm4v': 'video/mp4',
   'webm': 'video/webm',
@@ -21,7 +23,7 @@ const EXTENSION_TO_MIME = {
   'avi': 'video/x-msvideo',
 };
 
-const DEFAULT_ALLOWED_FILE_TYPES = 'jpg,jpeg,png,webp';
+const DEFAULT_ALLOWED_FILE_TYPES = 'jpg,jpeg,png,webp,heic,heif';
 
 let cachedAllowedTypes = null;
 let allowedTypesCacheExpiresAt = 0;

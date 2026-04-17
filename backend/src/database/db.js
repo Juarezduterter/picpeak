@@ -487,17 +487,17 @@ async function ensureGlobalCategories() {
   const defaultPages = [
     {
       slug: 'impressum',
-      title_en: 'Legal Notice',
+      title_en: 'Mentions légales',
       title_de: 'Impressum',
-      content_en: '<h2>Legal Notice</h2><p>Please edit this content in the admin panel.</p>',
+      content_en: '<h2>Mentions légales</h2><p>Merci de personnaliser ce contenu depuis le panneau d’administration.</p>',
       content_de: '<h2>Impressum</h2><p>Bitte bearbeiten Sie diesen Inhalt im Admin-Panel.</p>',
       updated_at: new Date(),
     },
     {
       slug: 'datenschutz',
-      title_en: 'Privacy Policy',
+      title_en: 'Politique de confidentialité',
       title_de: 'Datenschutzerklärung',
-      content_en: '<h2>Privacy Policy</h2><p>Please edit this content in the admin panel.</p>',
+      content_en: '<h2>Politique de confidentialité</h2><p>Merci de personnaliser ce contenu depuis le panneau d’administration.</p>',
       content_de: '<h2>Datenschutzerklärung</h2><p>Bitte bearbeiten Sie diesen Inhalt im Admin-Panel.</p>',
       updated_at: new Date(),
     },
