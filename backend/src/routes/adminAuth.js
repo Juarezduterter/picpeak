@@ -1,10 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { body } = require('express-validator');
 const { db, logActivity } = require('../database/db');
 const { adminAuth } = require('../middleware/auth');
 const { endSession } = require('../middleware/sessionTimeout');
 const { validatePasswordStrength } = require('../utils/passwordGenerator');
+const { setAdminAuthCookie } = require('../utils/tokenUtils');
 const { handleAsync, validateRequest, successResponse } = require('../utils/routeHelpers');
 const { NotFoundError, ConflictError, ValidationError } = require('../utils/errors');
 const router = express.Router();
@@ -140,7 +142,24 @@ router.post('/change-password', [
     { type: 'admin', id: userId, name: user.username }
   );
 
-  successResponse(res, { message: 'Password changed successfully' });
+  const refreshedToken = jwt.sign({
+    id: user.id,
+    username: user.username,
+    type: 'admin',
+    role: req.admin.roleName || null,
+    ip: req.ip || req.connection.remoteAddress,
+    loginTime: Date.now()
+  }, process.env.JWT_SECRET, {
+    expiresIn: '24h',
+    issuer: 'picpeak-auth'
+  });
+
+  setAdminAuthCookie(res, refreshedToken);
+
+  successResponse(res, {
+    message: 'Password changed successfully',
+    token: refreshedToken
+  });
 }));
 
 // Logout
